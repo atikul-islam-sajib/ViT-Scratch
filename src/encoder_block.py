@@ -5,6 +5,7 @@ import torch.nn as nn
 
 sys.path.append("./src/")
 
+from utils import config
 from feedforward_network import FeedForwardNetwork
 from multihead_attention import MultiHeadAttention
 from layer_normalization import LayerNormalization
@@ -73,14 +74,62 @@ class TransformerEncoder(nn.Module):
 
 
 if __name__ == "__main__":
-    transformerEncoder = TransformerEncoder(
-        dimension=512,
-        nheads=8,
-        dim_feedforward=2048,
-        dropout=0.1,
-        activation="relu",
-        bias=True,
-        epsilon=1e-6,
+    parser = argparse.ArgumentParser(
+        description="Encoder Block for the Transformer".title()
+    )
+    parser.add_argument(
+        "--dimension",
+        type=int,
+        default=config()["ViT"]["dimension"],
+        help="Dimension of the input tensor".capitalize(),
+    )
+    parser.add_argument(
+        "--nheads",
+        type=int,
+        default=config()["ViT"]["nheads"],
+        help="Number of heads in the multi-head attention".capitalize(),
+    )
+    parser.add_argument(
+        "--dim_feedforward",
+        type=int,
+        default=config()["ViT"]["dim_feedforward"],
+        help="Dimension of the feedforward network".capitalize(),
+    )
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=config()["ViT"]["dropout"],
+        help="Dropout rate".capitalize(),
+    )
+    parser.add_argument(
+        "--activation",
+        type=str,
+        default=config()["ViT"]["activation"],
+        help="Activation function".capitalize(),
+    )
+    parser.add_argument(
+        "--eps",
+        type=float,
+        default=config()["ViT"]["eps"],
+        help="Epsilon value for the layer normalization".capitalize(),
     )
 
-    print(transformerEncoder(torch.randn(40, 200, 512)).size())
+    args = parser.parse_args()
+
+    batch_size = config()["ViT"]["batch_size"]
+
+    transformerEncoder = TransformerEncoder(
+        dimension=args.dimension,
+        nheads=args.nheads,
+        dim_feedforward=args.dim_feedforward,
+        dropout=args.dropout,
+        activation=args.activation,
+        bias=True,
+        epsilon=args.eps,
+    )
+
+    assert transformerEncoder(torch.randn(batch_size, 200, args.dimension)).size() == (
+        batch_size,
+        200,
+        args.dimension,
+    ), "Encoder block is not working properly".capitalize()
