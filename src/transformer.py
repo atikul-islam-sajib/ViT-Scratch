@@ -121,4 +121,10 @@ if __name__ == "__main__":
         epsilon=args.eps,
     )
 
-    print(transformerEncoder(torch.randn(batch_size, 200, 512)).size())
+    assert transformerEncoder(torch.randn(batch_size, 200, 512)).size() == (
+        batch_size,
+        200,
+        args.dimension,
+    ), "TransformerEncoder output size is incorrect"
+
+    print("TransformerEncoder test passed")
