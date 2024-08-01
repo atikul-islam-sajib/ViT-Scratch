@@ -6,6 +6,8 @@ import torch.nn as nn
 
 sys.path.append("./src/")
 
+from utils import config
+
 
 def scaled_dot_product_attention(
     query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask=None
@@ -42,17 +44,39 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    query = torch.randn(())
+    batch_size = config()["ViT"]["batch_size"]
+    nheads = config()["ViT"]["nheads"]
+    dimension = config()["ViT"]["dimension"]
+
+    query = torch.randn((batch_size, nheads, 200, dimension // nheads))
+    key = torch.randn((batch_size, nheads, 200, dimension // nheads))
+    value = torch.randn((batch_size, nheads, 200, dimension // nheads))
+    mask = torch.randint(0, 2, (batch_size, 200))
+
     attention = scaled_dot_product_attention(
-        query=torch.randn((40, 8, 200, 64)),
-        key=torch.randn((40, 8, 200, 64)),
-        value=torch.randn((40, 8, 200, 64)),
+        query=query,
+        key=key,
+        value=value,
         mask=None,
     )
 
+    assert attention.size() == (
+        batch_size,
+        nheads,
+        200,
+        dimension // nheads,
+    ), "Sizes of inputs are not equal".capitalize()
+
     attention = scaled_dot_product_attention(
-        query=torch.randn((40, 8, 200, 64)),
-        key=torch.randn((40, 8, 200, 64)),
-        value=torch.randn((40, 8, 200, 64)),
-        mask=torch.randint(0, 2, (40, 200)),
+        query=query,
+        key=key,
+        value=value,
+        mask=mask,
     )
+
+    assert attention.size() == (
+        batch_size,
+        nheads,
+        200,
+        dimension // nheads,
+    ), "Sizes of inputs are not equal".capitalize()
