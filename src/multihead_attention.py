@@ -5,6 +5,9 @@ import torch.nn as nn
 
 sys.path.append("./src/")
 
+from utils import config
+from scaled_dot_product import scaled_dot_product_attention
+
 
 class MultiHeadAttention(nn.Module):
     def __init__(
@@ -67,6 +70,25 @@ class MultiHeadAttention(nn.Module):
             self.query = self.query.permute(0, 2, 1, 3)
             self.key = self.key.permute(0, 2, 1, 3)
             self.value = self.value.permute(0, 2, 1, 3)
+
+            self.attention = scaled_dot_product_attention(
+                query=self.query,
+                key=self.key,
+                value=self.value,
+                mask=mask,
+            )
+
+            self.attention = self.attention.view(
+                self.attention.size(0),
+                self.attention.size(2),
+                self.attention.size(1) * self.attention.size(3),
+            )
+
+            assert (
+                self.attention.size() == x.size()
+            ), "Attention output size does not match input size"
+
+            return self.layers(self.attention)
 
         else:
             raise TypeError("Input must be a torch.Tensor".capitalize())
