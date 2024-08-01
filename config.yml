@@ -6,3 +6,4 @@ ViT:
   dim_feedforward: 2048
   activation: "relu"
   dropout: 0.1
+  eps: 1e-05
