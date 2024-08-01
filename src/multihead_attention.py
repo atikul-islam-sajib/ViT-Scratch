@@ -95,5 +95,38 @@ class MultiHeadAttention(nn.Module):
 
 
 if __name__ == "__main__":
-    attention = MultiHeadAttention(dimension=512, nheads=8, dropout=0.1, bias=True)
-    print(attention(torch.randn((40, 200, 512))).size())
+    parser = argparse.ArgumentParser(
+        description="MultiHeadAttention Layer for the transformer".title()
+    )
+    parser.add_argument(
+        "--dimension",
+        type=int,
+        default=config()["ViT"]["dimension"],
+        help="Dimension of the input tensor".capitalize(),
+    )
+    parser.add_argument(
+        "--nheads",
+        type=int,
+        default=config()["ViT"]["nheads"],
+        help="Number of heads in the multihead attention layer".capitalize(),
+    )
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=config()["ViT"]["dropout"],
+        help="Dropout rate for the multihead attention layer".capitalize(),
+    )
+
+    args = parser.parse_args()
+
+    batch_size = config()["ViT"]["batch_size"]
+
+    attention = MultiHeadAttention(
+        dimension=args.dimension, nheads=args.nheads, dropout=args.dropout, bias=True
+    )
+
+    assert attention(torch.randn((batch_size, 200, args.dimension))).size() == (
+        batch_size,
+        200,
+        args.dimension,
+    ), "MultiHeadAttention Layer is not working properly".capitalize()
