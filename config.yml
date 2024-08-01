@@ -3,4 +3,6 @@ ViT:
   patch_size: 4
   dimension: 512
   nheads: 8
+  dim_feedforward: 2048
+  activation: "relu"
   dropout: 0.1

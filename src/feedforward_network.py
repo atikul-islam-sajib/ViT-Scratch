@@ -25,14 +25,16 @@ class FeedForwardNetwork(nn.Module):
         self.activation = activation
         self.bias = bias
 
-        if self.activation == "relu":
-            self.activation = nn.ReLU(inplace=True)
+        if self.activation == "elu":
+            self.activation = nn.ELU(inplace=True)
 
         elif self.activation == "gelu":
             self.activation = nn.GELU()
 
         elif self.activation == "leaky_relu":
             self.activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+        else:
+            self.activation = nn.ReLU(inplace=True)
 
         self.layers = []
 
@@ -62,11 +64,45 @@ class FeedForwardNetwork(nn.Module):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Pointwise Feed Forward Network for Transformer".title()
+    )
+    parser.add_argument(
+        "--in_features",
+        type=int,
+        default=config()["ViT"]["dimension"],
+        help="Number of input features".capitalize(),
+    )
+    parser.add_argument(
+        "--out_features",
+        type=int,
+        default=config()["ViT"]["dim_feedforward"],
+        help="Number of output features".capitalize(),
+    )
+    parser.add_argument(
+        "--activation",
+        type=str,
+        default="gelu",
+        choices=["gelu", "relu", "silu", "leaky_relu", "elu"],
+        help="Activation function".capitalize(),
+    )
+
+    args = parser.parse_args()
+
+    batch_size = config()["ViT"]["batch_size"]
+    dimension = args.in_features
+
+    x = torch.randn((batch_size, 200, dimension))
+
     net = FeedForwardNetwork(
-        in_features=512,
-        out_features=2048,
-        activation="gelu",
+        in_features=args.in_features,
+        out_features=args.out_features,
+        activation=args.activation,
         bias=True,
     )
 
-    print(net)
+    assert net(x=x).size() == (
+        batch_size,
+        200,
+        dimension,
+    ), "Output shape is incorrect in PointWise FeedForward Network".capitalize()
