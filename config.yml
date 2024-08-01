@@ -1,0 +1,5 @@
+ViT:
+  batch_size: 40
+  patch_size: 4
+  dimension: 512
+  nheads: 8
