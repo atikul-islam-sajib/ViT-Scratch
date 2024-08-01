@@ -11,7 +11,7 @@ from multihead_attention import MultiHeadAttention
 from layer_normalization import LayerNormalization
 
 
-class TransformerEncoder(nn.Module):
+class TransformerEncoderBlock(nn.Module):
     def __init__(
         self,
         dimension: int = 512,
@@ -22,7 +22,7 @@ class TransformerEncoder(nn.Module):
         activation: str = "relu",
         bias: bool = True,
     ):
-        super(TransformerEncoder, self).__init__()
+        super(TransformerEncoderBlock, self).__init__()
 
         self.dimension = dimension
         self.nheads = nheads
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     batch_size = config()["ViT"]["batch_size"]
 
-    transformerEncoder = TransformerEncoder(
+    transformerEncoder = TransformerEncoderBlock(
         dimension=args.dimension,
         nheads=args.nheads,
         dim_feedforward=args.dim_feedforward,

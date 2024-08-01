@@ -4,6 +4,7 @@ ViT:
   dimension: 512
   nheads: 8
   dim_feedforward: 2048
-  activation: "relu"
+  num_layers: 8
   dropout: 0.1
   eps: 1e-05
+  activation: "relu"
