@@ -4,7 +4,9 @@ import torch
 import argparse
 import torch.nn as nn
 
-sys.path.append("./src/")  # 40, 200, 512
+sys.path.append("./src/")
+
+from utils import config
 
 
 class PositionalEncoding(nn.Module):
@@ -41,8 +43,40 @@ class PositionalEncoding(nn.Module):
 
 
 if __name__ == "__main__":
-    positional_encoding = PositionalEncoding(
-        sequence_length=200, dimension=512, constant=10000
+    parser = argparse.ArgumentParser(
+        description="Positional Encoding for the transformer".title()
+    )
+    parser.add_argument(
+        "--sequence_length",
+        type=int,
+        default=200,
+        help="Length of the sequence".capitalize(),
+    )
+    parser.add_argument(
+        "--dimension",
+        type=int,
+        default=config()["ViT"]["dimension"],
+        help="Dimension of the positional encoding".capitalize(),
+    )
+    parser.add_argument(
+        "--constant",
+        type=int,
+        default=10000,
+        help="Constant used in the positional encoding".capitalize(),
     )
 
-    print(positional_encoding(torch.randn((400, 200, 512))).size())
+    args = parser.parse_args()
+
+    positional_encoding = PositionalEncoding(
+        sequence_length=args.sequence_length,
+        dimension=args.dimension,
+        constant=args.constant,
+    )
+
+    assert positional_encoding(
+        torch.randn((40, args.sequence_length, args.dimension))
+    ).size() == (
+        1,
+        args.sequence_length,
+        args.dimension,
+    )
