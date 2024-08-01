@@ -36,6 +36,32 @@ class LayerNormalization(nn.Module):
 
 
 if __name__ == "__main__":
-    layer_norm = LayerNormalization(normalized_shape=512, epsilon=1e-05)
+    parser = argparse.ArgumentParser(
+        description="Layer Normalization for the Transformer".title()
+    )
+    parser.add_argument(
+        "--normalized_shape",
+        type=int,
+        default=config()["ViT"]["dimension"],
+        help="The shape of the input tensor".capitalize(),
+    )
+    parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=config()["ViT"]["eps"],
+        help="The epsilon value for the variance".capitalize(),
+    )
 
-    print(layer_norm(torch.rand((40, 200, 512))).size())
+    args = parser.parse_args()
+
+    batch_size = config()["ViT"]["batch_size"]
+
+    layer_norm = LayerNormalization(
+        normalized_shape=args.normalized_shape, epsilon=args.epsilon
+    )
+
+    assert layer_norm(torch.rand((batch_size, 200, args.normalized_shape))).size() == (
+        batch_size,
+        200,
+        args.normalized_shape,
+    ), "Layer Normalization failed".capitalize()
