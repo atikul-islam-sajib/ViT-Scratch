@@ -8,6 +8,7 @@ sys.path.append("./src/")
 
 from positional_encoding import PositionalEncoding
 from feedforward_network import FeedForwardNetwork
+from layer_normalization import LayerNormalization
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -57,6 +58,10 @@ class UnitTest(unittest.TestCase):
             in_features=self.dimension,
             out_features=self.feedforward,
             activation=self.activation,
+        )
+
+        self.layernorm = LayerNormalization(
+            normalized_shape=self.dimension,
         )
 
     def test_positional_encoding(self):
@@ -159,6 +164,20 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(
             result.size(), (self.batch_size, self.sequence_length, self.dimension)
         )
+
+    def test_layer_normalization(self):
+        result = self.network(
+            x=torch.randn(self.batch_size, self.sequence_length, self.dimension)
+        )
+
+        normalization = self.layernorm(x=result)
+
+        self.assertEqual(
+            normalization.size(),
+            (self.batch_size, self.sequence_length, self.dimension),
+        )
+
+        self.assertIsInstance(self.layernorm, LayerNormalization)
 
 
 if __name__ == "__main__":
