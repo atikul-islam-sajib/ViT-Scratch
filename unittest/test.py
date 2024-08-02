@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 sys.path.append("./src/")
 
 from positional_encoding import PositionalEncoding
+from feedforward_network import FeedForwardNetwork
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -16,8 +17,10 @@ class UnitTest(unittest.TestCase):
         self.batch_size = 40
         self.nheads = 8
         self.sequence_length = 200
+        self.feedforward = 2048
         self.dimension = 512
         self.constant = 10000
+        self.activation = "relu"
 
         self.query = torch.randn(self.batch_size, self.sequence_length, self.dimension)
         self.key = torch.randn(self.batch_size, self.sequence_length, self.dimension)
@@ -48,6 +51,12 @@ class UnitTest(unittest.TestCase):
                 self.sequence_length,
                 self.dimension // self.nheads,
             ),
+        )
+
+        self.network = FeedForwardNetwork(
+            in_features=self.dimension,
+            out_features=self.feedforward,
+            activation=self.activation,
         )
 
     def test_positional_encoding(self):
@@ -116,6 +125,39 @@ class UnitTest(unittest.TestCase):
                 self.sequence_length,
                 self.dimension // self.nheads,
             ),
+        )
+
+    def test_feedforward_neural_network(self):
+        embedding_layer = nn.Embedding(
+            num_embeddings=self.sequence_length, embedding_dim=self.dimension
+        )
+
+        embedding = embedding_layer(
+            torch.randint(
+                0, self.sequence_length, (self.total_texts, self.sequence_length)
+            )
+        )
+
+        position = self.positional_encoding(x=embedding)
+
+        embedding_with_position = torch.add(embedding, position)
+
+        dataloader = DataLoader(
+            dataset=list(embedding_with_position),
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
+
+        data = next(iter(dataloader))
+
+        self.assertEqual(
+            data.size(), (self.batch_size, self.sequence_length, self.dimension)
+        )
+
+        result = self.network(x=data)
+
+        self.assertEqual(
+            result.size(), (self.batch_size, self.sequence_length, self.dimension)
         )
 
 
