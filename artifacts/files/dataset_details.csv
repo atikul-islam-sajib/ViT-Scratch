@@ -1,0 +1,2 @@
+,train_data,train_labels,valid_data,valid_labels,total_data,batch_size,channels,height,width
+Dataset Details,4284,4284,1428,1428,5712,64,3,128,128

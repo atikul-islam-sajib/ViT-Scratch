@@ -4,6 +4,7 @@ import cv2
 import math
 import zipfile
 import argparse
+import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -182,6 +183,60 @@ class Loader:
         else:
             raise FileNotFoundError("The folder {} does not exist".format(FILES_PATH))
 
+    @staticmethod
+    def dataset_details():
+        FILES_PATH = config()["path"]["FILES_PATH"]
+        PROCESSED_PATH = config()["path"]["PROCESSED_DATA_PATH"]
+
+        os.makedirs(FILES_PATH, exist_ok=True)
+
+        if os.path.exists(FILES_PATH):
+            plt.figure(figsize=(20, 20))
+
+            train_dataloader = load(
+                filename=os.path.join(PROCESSED_PATH, "train_dataloader.pkl")
+            )
+            valid_dataloader = load(
+                filename=os.path.join(PROCESSED_PATH, "valid_dataloader.pkl")
+            )
+
+            train_data, _ = next(iter(train_dataloader))
+
+            dataset = pd.DataFrame(
+                {
+                    "train_data": [
+                        sum(actual.size(0) for actual, _ in train_dataloader)
+                    ],
+                    "train_labels": [
+                        sum(target.size(0) for _, target in train_dataloader)
+                    ],
+                    "valid_data": [
+                        sum(actual.size(0) for actual, _ in valid_dataloader)
+                    ],
+                    "valid_labels": [
+                        sum(target.size(0) for _, target in valid_dataloader)
+                    ],
+                    "total_data": [
+                        sum(actual.size(0) for actual, _ in train_dataloader)
+                        + sum(actual.size(0) for actual, _ in valid_dataloader)
+                    ],
+                    "batch_size": [train_data.size(0)],
+                    "channels": [train_data.size(1)],
+                    "height": [train_data.size(2)],
+                    "width": [train_data.size(3)],
+                },
+                index=["Dataset Details"],
+            ).to_csv(os.path.join(FILES_PATH, "dataset_details.csv"))
+
+            print(
+                "Dataset details saved to {}".format(
+                    os.path.join(FILES_PATH, "dataset_details.csv").capitalize()
+                )
+            )
+
+        else:
+            raise FileNotFoundError("The folder {} does not exist".format(FILES_PATH))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Dataloader for ViT".title())
@@ -225,6 +280,19 @@ if __name__ == "__main__":
         split_size=args.split_size,
     )
     # loader.unzip_folder()
-    # loader.extract_features()
-    # loader.create_dataloader()
-    loader.display_images()
+    loader.extract_features()
+    loader.create_dataloader()
+
+    try:
+        Loader.display_images()
+    except FileNotFoundError as e:
+        print("An error is occcured", e)
+    except Exception as e:
+        print("An error is occcured", e)
+
+    try:
+        Loader.dataset_details()
+    except Exception as e:
+        print("An error is occcured", e)
+    except Exception as e:
+        print("An error is occcured", e)
