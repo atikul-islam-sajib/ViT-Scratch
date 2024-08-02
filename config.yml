@@ -1,3 +1,15 @@
+path:
+  RAW_DATA_PATH: "./data/raw/"
+  PROCESSED_DATA_PATH: "./data/processed/"
+
+dataloader:
+  image_path: None
+  channels: 3
+  image_size: 128
+  batch_size: 64
+  split_size: 0.25
+  labels: ["yes", "no"]
+
 ViT:
   batch_size: 40
   patch_size: 4
