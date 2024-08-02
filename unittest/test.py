@@ -11,6 +11,7 @@ from feedforward_network import FeedForwardNetwork
 from layer_normalization import LayerNormalization
 from multihead_attention import MultiHeadAttention
 from encoder_block import TransformerEncoderBlock
+from transformer import TransformerEncoder
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -19,6 +20,7 @@ class UnitTest(unittest.TestCase):
         self.total_texts = 400
         self.batch_size = 40
         self.nheads = 8
+        self.num_layers = 6
         self.sequence_length = 200
         self.feedforward = 2048
         self.dimension = 512
@@ -79,6 +81,15 @@ class UnitTest(unittest.TestCase):
             dim_feedforward=self.feedforward,
             dropout=self.dropout,
             activation=self.activation,
+        )
+
+        self.transformerEncoder = TransformerEncoder(
+            dimension=self.dimension,
+            nheads=self.nheads,
+            dim_feedforward=self.feedforward,
+            dropout=self.dropout,
+            activation=self.activation,
+            num_encoder_layers=self.num_layers,
         )
 
     def test_positional_encoding(self):
@@ -273,6 +284,16 @@ class UnitTest(unittest.TestCase):
             encoder_result.size(),
             (self.batch_size, self.sequence_length, self.dimension),
         )
+
+    def test_transformerEncoder(self):
+        self.assertEqual(
+            self.transformerEncoder(
+                x=torch.randn(self.batch_size, self.sequence_length, self.dimension)
+            ).size(),
+            (self.batch_size, self.sequence_length, self.dimension),
+        )
+
+        self.assertIsInstance(self.transformerEncoder, TransformerEncoder)
 
 
 if __name__ == "__main__":
