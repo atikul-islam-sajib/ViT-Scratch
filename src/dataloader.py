@@ -3,7 +3,10 @@ import sys
 import zipfile
 import cv2
 import torch
+from tqdm import tqdm
+from PIL import Image
 from torchvision import transforms
+from sklearn.model_selection import train_test_split
 
 sys.path.append("./src/")
 
@@ -36,12 +39,30 @@ class Loader:
             self.RAW_DATA_PATH = self.CONFIG["path"]["RAW_DATA_PATH"]
             self.PROCESSED_DATA_PATH = self.CONFIG["path"]["PROCESSED_DATA_PATH"]
 
+    def dataset_split(self, X: list, y: list):
+        if isinstance(X, list) and isinstance(y, list):
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=self.split_size, random_state=42
+            )
+
+            return {
+                "X_train": X_train,
+                "X_test": X_test,
+                "y_train": y_train,
+                "y_test": y_test,
+            }
+
+        else:
+            raise TypeError("X and y must be list".capitalize())
+
     def transforms(self):
         return transforms.Compose(
-            transforms.Resize((self.image_size, self.image_size)),
-            transforms.ToTensor(),
-            transforms.CenterCrop((self.image_size, self.image_size)),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            [
+                transforms.Resize((self.image_size, self.image_size)),
+                transforms.ToTensor(),
+                transforms.CenterCrop((self.image_size, self.image_size)),
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+            ]
         )
 
     def unzip_folder(self):
@@ -56,7 +77,7 @@ class Loader:
         self.directory = os.path.join(self.RAW_DATA_PATH, "dataset")
         self.categories = config()["dataloader"]["labels"]
 
-        for category in self.categories:
+        for category in tqdm(self.categories):
             image_path = os.path.join(self.directory, category)
 
             for image in os.listdir(image_path):
@@ -64,7 +85,27 @@ class Loader:
 
                 if image is not None:
                     image = cv2.imread(image)
-                    image = cv2.cvtColor(image, cv2.GRAY2BGR)
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+                    image = self.transforms()(Image.fromarray(image))
+                    label = self.categories.index(category)
+
+                    self.X.append(image)
+                    self.Y.append(label)
+
+        assert len(self.X) == len(
+            self.Y
+        ), "Image size and Label size not equal".capitalize()
+
+        try:
+            dataset = self.dataset_split(X=self.X, y=self.Y)
+        except TypeError as e:
+            print("An error occured: ", e)
+        except Exception as e:
+            print("An error occured: ", e)
+
+        else:
+            return dataset
 
 
 if __name__ == "__main__":
