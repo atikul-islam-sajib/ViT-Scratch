@@ -1,17 +1,19 @@
 import os
 import sys
 import cv2
+import math
 import zipfile
 import argparse
 from PIL import Image
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 sys.path.append("./src/")
 
-from utils import config, dump
+from utils import config, dump, load
 
 
 class Loader:
@@ -139,6 +141,47 @@ class Loader:
 
         print("Dataloader is saved in the folder {}".format(self.PROCESSED_DATA_PATH))
 
+    @staticmethod
+    def display_images():
+        FILES_PATH = config()["path"]["FILES_PATH"]
+        PROCESSED_PATH = config()["path"]["PROCESSED_DATA_PATH"]
+
+        os.makedirs(FILES_PATH, exist_ok=True)
+
+        if os.path.exists(FILES_PATH):
+            plt.figure(figsize=(20, 20))
+
+            dataloader = load(
+                filename=os.path.join(PROCESSED_PATH, "train_dataloader.pkl")
+            )
+
+            data, label = next(iter(dataloader))
+
+            labels = config()["dataloader"]["labels"]
+
+            number_of_rows = len(data) // int(
+                math.sqrt(config()["dataloader"]["batch_size"])
+            )
+            number_of_columns = len(data) // number_of_rows
+
+            for index, image in enumerate(data):
+                X = image.squeeze().permute(1, 2, 0).detach().cpu().numpy()
+                X = (X - X.min()) / (X.max() - X.min())
+
+                plt.subplot(2 * number_of_rows, 2 * number_of_columns, 2 * index + 1)
+                plt.imshow(X)
+                plt.title(labels[label[index]].capitalize())
+                plt.axis("off")
+
+            plt.tight_layout()
+            plt.savefig(os.path.join(FILES_PATH, "image.png"))
+            plt.show()
+
+            print("Images are saved in {}".format(FILES_PATH))
+
+        else:
+            raise FileNotFoundError("The folder {} does not exist".format(FILES_PATH))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Dataloader for ViT".title())
@@ -183,4 +226,5 @@ if __name__ == "__main__":
     )
     # loader.unzip_folder()
     # loader.extract_features()
-    loader.create_dataloader()
+    # loader.create_dataloader()
+    loader.display_images()
