@@ -10,6 +10,7 @@ from positional_encoding import PositionalEncoding
 from feedforward_network import FeedForwardNetwork
 from layer_normalization import LayerNormalization
 from multihead_attention import MultiHeadAttention
+from encoder_block import TransformerEncoderBlock
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -70,6 +71,14 @@ class UnitTest(unittest.TestCase):
             dimension=self.dimension,
             nheads=self.nheads,
             dropout=self.dropout,
+        )
+
+        self.encoder_block = TransformerEncoderBlock(
+            dimension=self.dimension,
+            nheads=self.nheads,
+            dim_feedforward=self.feedforward,
+            dropout=self.dropout,
+            activation=self.activation,
         )
 
     def test_positional_encoding(self):
@@ -219,6 +228,51 @@ class UnitTest(unittest.TestCase):
         self.assertIsInstance(self.multihead_attention, MultiHeadAttention)
         self.assertIsInstance(embedding_layer, nn.Embedding)
         self.assertIsInstance(self.positional_encoding, PositionalEncoding)
+
+    def test_encoder_block(self):
+        X = torch.randint(
+            0, self.sequence_length, (self.total_texts, self.sequence_length)
+        )
+        y = torch.randint(0, 4, (self.total_texts,))
+
+        dataloader = DataLoader(
+            dataset=list(zip(X, y)), batch_size=self.batch_size, shuffle=True
+        )
+
+        data, label = next(iter(dataloader))
+
+        embedding_layer = nn.Embedding(
+            num_embeddings=self.sequence_length, embedding_dim=self.dimension
+        )
+
+        embedding = embedding_layer(data)
+
+        position = self.positional_encoding(x=embedding)
+
+        embedding_with_position = torch.add(position, embedding)
+
+        encoder_result = self.encoder_block(x=embedding_with_position)
+
+        self.assertEqual(
+            data.size(),
+            (self.batch_size, self.sequence_length),
+        )
+        self.assertEqual(
+            label.size(),
+            (self.batch_size,),
+        )
+        self.assertEqual(
+            embedding.size(),
+            (self.batch_size, self.sequence_length, self.dimension),
+        )
+        self.assertEqual(
+            embedding_with_position.size(),
+            (self.batch_size, self.sequence_length, self.dimension),
+        )
+        self.assertEqual(
+            encoder_result.size(),
+            (self.batch_size, self.sequence_length, self.dimension),
+        )
 
 
 if __name__ == "__main__":
