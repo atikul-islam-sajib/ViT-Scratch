@@ -9,6 +9,7 @@ sys.path.append("./src/")
 from positional_encoding import PositionalEncoding
 from feedforward_network import FeedForwardNetwork
 from layer_normalization import LayerNormalization
+from multihead_attention import MultiHeadAttention
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -21,6 +22,7 @@ class UnitTest(unittest.TestCase):
         self.feedforward = 2048
         self.dimension = 512
         self.constant = 10000
+        self.dropout = 0.1
         self.activation = "relu"
 
         self.query = torch.randn(self.batch_size, self.sequence_length, self.dimension)
@@ -62,6 +64,12 @@ class UnitTest(unittest.TestCase):
 
         self.layernorm = LayerNormalization(
             normalized_shape=self.dimension,
+        )
+
+        self.multihead_attention = MultiHeadAttention(
+            dimension=self.dimension,
+            nheads=self.nheads,
+            dropout=self.dropout,
         )
 
     def test_positional_encoding(self):
@@ -178,6 +186,39 @@ class UnitTest(unittest.TestCase):
         )
 
         self.assertIsInstance(self.layernorm, LayerNormalization)
+
+    def test_multihead_attention_layer(self):
+        x = torch.randn(self.batch_size, self.sequence_length, self.dimension)
+
+        mask = None
+
+        attention = self.multihead_attention(x=x, mask=mask)
+
+        self.assertEqual(
+            attention.size(), (self.batch_size, self.sequence_length, self.dimension)
+        )
+
+        embedding_layer = nn.Embedding(self.sequence_length, self.dimension)
+
+        embedding = embedding_layer(
+            torch.randint(
+                0, self.sequence_length, (self.batch_size, self.sequence_length)
+            )
+        )
+
+        position = self.positional_encoding(x=embedding)
+
+        embedding_with_position = torch.add(embedding, position)
+
+        attention = self.multihead_attention(embedding_with_position)
+
+        self.assertEqual(
+            attention.size(), (self.batch_size, self.sequence_length, self.dimension)
+        )
+
+        self.assertIsInstance(self.multihead_attention, MultiHeadAttention)
+        self.assertIsInstance(embedding_layer, nn.Embedding)
+        self.assertIsInstance(self.positional_encoding, PositionalEncoding)
 
 
 if __name__ == "__main__":
