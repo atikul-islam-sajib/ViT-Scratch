@@ -7,10 +7,11 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
+from torch.utils.data import Dataset, DataLoader
 
 sys.path.append("./src/")
 
-from utils import config
+from utils import config, dump
 
 
 class Loader:
@@ -83,7 +84,7 @@ class Loader:
             for image in os.listdir(image_path):
                 image = os.path.join(image_path, image)
 
-                if image is not None:
+                if (image is not None) and (image.endswith((".jpg", ".png", ".jpeg"))):
                     image = cv2.imread(image)
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -92,6 +93,9 @@ class Loader:
 
                     self.X.append(image)
                     self.Y.append(label)
+
+                else:
+                    print("Image not found".capitalize())
 
         assert len(self.X) == len(
             self.Y
@@ -107,8 +111,37 @@ class Loader:
         else:
             return dataset
 
+    def create_dataloader(self):
+        dataset = self.extract_features()
+
+        train_dataloader = DataLoader(
+            dataset=list(zip(dataset["X_train"], dataset["y_train"])),
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
+
+        valid_dataloader = DataLoader(
+            dataset=list(zip(dataset["X_test"], dataset["y_test"])),
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
+
+        for value, filename in [
+            (train_dataloader, "train_dataloader"),
+            (valid_dataloader, "valid_dataloader"),
+        ]:
+            dump(
+                value=value,
+                filename=os.path.join(
+                    self.PROCESSED_DATA_PATH, "{}.pkl".format(filename)
+                ),
+            )
+
+        print("Dataloader is saved in the folder {}".format(self.PROCESSED_DATA_PATH))
+
 
 if __name__ == "__main__":
     loader = Loader(image_path="/Users/shahmuhammadraditrahman/Desktop/dataset.zip")
     # loader.unzip_folder()
-    loader.extract_features()
+    # loader.extract_features()
+    loader.create_dataloader()
