@@ -1,13 +1,13 @@
 import os
 import sys
-import zipfile
 import cv2
-import torch
-from tqdm import tqdm
+import zipfile
+import argparse
 from PIL import Image
+from tqdm import tqdm
 from torchvision import transforms
+from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset, DataLoader
 
 sys.path.append("./src/")
 
@@ -141,7 +141,46 @@ class Loader:
 
 
 if __name__ == "__main__":
-    loader = Loader(image_path="/Users/shahmuhammadraditrahman/Desktop/dataset.zip")
+    parser = argparse.ArgumentParser(description="Dataloader for ViT".title())
+    parser.add_argument(
+        "--image_path",
+        type=str,
+        default=config()["dataloader"]["image_path"],
+        help="Path to the image dataset".capitalize(),
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=config()["dataloader"]["channels"],
+        help="Number of channels in the image".capitalize(),
+    )
+    parser.add_argument(
+        "--image_size",
+        type=int,
+        default=config()["dataloader"]["image_size"],
+        help="Size of the image".capitalize(),
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=config()["dataloader"]["batch_size"],
+        help="Batch size for the dataloader".capitalize(),
+    )
+    parser.add_argument(
+        "--split_size",
+        type=float,
+        default=config()["dataloader"]["split_size"],
+        help="Split size for the dataloader".capitalize(),
+    )
+    args = parser.parse_args()
+
+    loader = Loader(
+        image_path=args.image_path,
+        image_channels=args.channels,
+        image_size=args.image_size,
+        batch_size=args.batch_size,
+        split_size=args.split_size,
+    )
     # loader.unzip_folder()
     # loader.extract_features()
     loader.create_dataloader()
