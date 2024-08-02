@@ -8,7 +8,7 @@ dataloader:
   image_size: 128
   batch_size: 64
   split_size: 0.25
-  labels: ["yes", "no"]
+  labels: ["glioma", "meningioma", "notumor", "pituitary"]
 
 ViT:
   batch_size: 40

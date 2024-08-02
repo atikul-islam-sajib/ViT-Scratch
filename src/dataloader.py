@@ -1,9 +1,12 @@
+import os
 import sys
 import zipfile
 import cv2
 import torch
 
 sys.path.append("./src/")
+
+from utils import config
 
 
 class Loader:
@@ -22,5 +25,16 @@ class Loader:
         self.split_size = split_size
 
     def unzip_folder(self):
-        with zipfile.ZipFile(self.image_path, "r") as zip:
-            zip.extractall()
+        raw_data_path = config()["path"]["RAW_DATA_PATH"]
+
+        if os.path.exists(raw_data_path):
+            with zipfile.ZipFile(self.image_path, "r") as zip:
+                zip.extractall(raw_data_path)
+
+        else:
+            raise FileNotFoundError("RAW Path not found".capitalize())
+
+
+if __name__ == "__main__":
+    loader = Loader(image_path="/Users/shahmuhammadraditrahman/Desktop/dataset.zip")
+    loader.unzip_folder()
