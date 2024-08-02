@@ -12,12 +12,35 @@ dataloader:
   labels: ["glioma", "meningioma", "notumor", "pituitary"]
 
 ViT:
-  batch_size: 40
-  patch_size: 4
-  dimension: 512
-  nheads: 8
-  dim_feedforward: 2048
-  num_layers: 8
-  dropout: 0.1
-  eps: 1e-05
-  activation: "relu"
+  batch_size: 40                    # Number of samples per batch
+  patch_size: 4                     # Size of each image patch
+  dimension: 512                    # Embedding dimension for patches
+  nheads: 8                         # Number of attention heads
+  dim_feedforward: 2048             # Dimension of the feedforward network
+  num_layers: 8                     # Number of transformer layers
+  dropout: 0.1                      # Dropout rate
+  eps: 1e-05                        # Epsilon value for normalization layers
+  activation: "relu"                # Activation function
+
+
+trainer:
+  epochs: 2000                      # Number of training epochs
+  lr: 0.001                         # Learning rate
+  beta1: 0.5                        # Beta1 hyperparameter for Adam optimizer
+  beta2: 0.999                      # Beta2 hyperparameter for Adam optimizer
+  momentum: 0.90                    # Momentum for optimizers
+  weight_decay: 0.001               # Weight decay for regularization
+  step_size: 100                    # Step size for learning rate scheduler
+  gamma: 0.85                       # Multiplicative factor for learning rate decay
+  threshold: 100                    # Threshold for model saving purposes
+  device: "cpu"                     # Device to use for training (e.g., MPS, CPU, GPU)
+  adam: True                        # Use Adam optimizer
+  SGD: False                        # Use SGD optimizer
+  pixelLoss: False                  # Use pixel-wise loss
+  l1_regularization: False          # Use L1 regularization
+  l2_regularization: False          # Use L2 regularization
+  elasticnet_regularization: False  # Use Elastic Net regularization
+  lr_scheduler: True                # Enable learning rate scheduler
+  verbose: True                     # Enable verbose logging
+  mlflow: False                     # Enable MLflow tracking
+  
