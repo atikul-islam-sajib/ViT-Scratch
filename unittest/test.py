@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 
 sys.path.append("./src/")
 
+from ViT import ViT
 from dataloader import Loader
 from utils import config, load
 from patch_embedding import PatchEmbedding
@@ -27,6 +28,7 @@ class UnitTest(unittest.TestCase):
         self.total_texts = 400
         self.batch_size = 40
         self.nheads = 8
+        self.num_classes = 4
         self.num_layers = 6
         self.sequence_length = 200
         self.feedforward = 2048
@@ -111,6 +113,18 @@ class UnitTest(unittest.TestCase):
             image_channels=self.image_channels,
             batch_size=64,
             split_size=0.25,
+        )
+
+        self.model = ViT(
+            image_size=self.image_size,
+            image_channels=self.image_channels,
+            patch_size=self.patch_size,
+            labels=self.num_classes,
+            num_encoder_layers=self.num_layers,
+            nheads=self.nheads,
+            dim_feedforward=self.feedforward,
+            dropout=self.dropout,
+            activation=self.activation,
         )
 
     def test_positional_encoding(self):
@@ -345,6 +359,21 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(channels, self.image_channels)
         self.assertEqual(batch_size, 64)
         self.assertEqual(image_size, 128)
+
+    def test_ViT_model(self):
+        self.assertEqual(
+            self.model(
+                x=torch.randn(
+                    self.batch_size,
+                    self.image_channels,
+                    self.image_size,
+                    self.image_size,
+                )
+            ).size(),
+            (self.batch_size, self.num_classes),
+        )
+
+        self.assertIsInstance(self.model, ViT)
 
 
 if __name__ == "__main__":
