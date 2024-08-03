@@ -280,7 +280,6 @@ if __name__ == "__main__":
         split_size=args.split_size,
     )
     # loader.unzip_folder()
-    loader.extract_features()
     loader.create_dataloader()
 
     try:
@@ -292,7 +291,7 @@ if __name__ == "__main__":
 
     try:
         Loader.dataset_details()
-    except Exception as e:
+    except FileNotFoundError as e:
         print("An error is occcured", e)
     except Exception as e:
         print("An error is occcured", e)
