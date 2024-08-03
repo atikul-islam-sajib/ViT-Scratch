@@ -1,18 +1,21 @@
+import os
 import sys
 import torch
 import unittest
 import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
 sys.path.append("./src/")
 
+from dataloader import Loader
+from utils import config, load
+from patch_embedding import PatchEmbedding
+from transformer import TransformerEncoder
 from positional_encoding import PositionalEncoding
 from feedforward_network import FeedForwardNetwork
 from layer_normalization import LayerNormalization
 from multihead_attention import MultiHeadAttention
 from encoder_block import TransformerEncoderBlock
-from patch_embedding import PatchEmbedding
-from transformer import TransformerEncoder
 from scaled_dot_product import scaled_dot_product_attention
 
 
@@ -100,6 +103,14 @@ class UnitTest(unittest.TestCase):
             image_size=self.image_size,
             image_channels=self.image_channels,
             patch_size=self.patch_size,
+        )
+
+        self.loader = Loader(
+            image_path="./data/raw/dataset.zip",
+            image_size=128,
+            image_channels=self.image_channels,
+            batch_size=64,
+            split_size=0.25,
         )
 
     def test_positional_encoding(self):
@@ -317,6 +328,23 @@ class UnitTest(unittest.TestCase):
             self.patch_embedding(image).size(),
             (self.batch_size, num_of_patches + 1, num_of_dimension),
         )
+
+    def test_dataloader(self):
+        train_dataloader = load(
+            filename=os.path.join(
+                config()["path"]["PROCESSED_DATA_PATH"], "train_dataloader.pkl"
+            )
+        )
+
+        train_data, _ = next(iter(train_dataloader))
+
+        channels = train_data.size(1)
+        batch_size = train_data.size(0)
+        image_size = train_data.size(2)
+
+        self.assertEqual(channels, self.image_channels)
+        self.assertEqual(batch_size, 64)
+        self.assertEqual(image_size, 128)
 
 
 if __name__ == "__main__":
