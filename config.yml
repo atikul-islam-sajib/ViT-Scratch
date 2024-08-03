@@ -12,7 +12,6 @@ dataloader:
   labels: ["glioma", "meningioma", "notumor", "pituitary"]
 
 ViT:
-  batch_size: 40                    # Number of samples per batch
   patch_size: 4                     # Size of each image patch
   dimension: 512                    # Embedding dimension for patches
   nheads: 8                         # Number of attention heads

@@ -5,6 +5,7 @@ import torch.nn as nn
 
 sys.path.append("./src/")
 
+from utils import config
 from positional_encoding import PositionalEncoding
 
 
@@ -55,5 +56,39 @@ class PatchEmbedding(nn.Module):
 
 
 if __name__ == "__main__":
-    patch_embedding = PatchEmbedding(image_channels=3, image_size=224, patch_size=16)
-    print(patch_embedding(torch.randn(64, 3, 224, 224)).size())
+    parser = argparse.ArgumentParser(description="Patch Embedding for ViT".title())
+    parser.add_argument(
+        "--image_channels",
+        type=int,
+        default=config()["dataloader"]["channels"],
+        help="Number of channels in the input image".capitalize(),
+    )
+    parser.add_argument(
+        "--image_size",
+        type=int,
+        default=config()["dataloader"]["image_size"],
+        help="Size of the input image".capitalize(),
+    )
+    parser.add_argument(
+        "--patch_size",
+        type=int,
+        default=config()["ViT"]["patch_size"],
+        help="Size of the patch".capitalize(),
+    )
+
+    args = parser.parse_args()
+
+    batch_size = config()["dataloader"]["batch_size"]
+
+    patch_embedding = PatchEmbedding(
+        image_channels=args.image_channels,
+        image_size=args.image_size,
+        patch_size=args.patch_size,
+    )
+
+    number_of_patches = (args.image_size // args.patch_size) ** 2
+    number_of_dimension = (args.patch_size**2) * args.image_channels
+
+    assert patch_embedding(
+        torch.randn(batch_size, args.image_channels, args.image_size, args.image_size)
+    ).size() == (batch_size, number_of_patches + 1, number_of_dimension)
