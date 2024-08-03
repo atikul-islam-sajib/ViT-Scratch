@@ -414,6 +414,27 @@ class UnitTest(unittest.TestCase):
             self.init["criterion"].__class__ == CategoricalLoss
         ), "Loss is not a CategoricalLoss".capitalize()
 
+    def test_categorical_loss(self):
+        reduction = "mean"
+
+        loss = CategoricalLoss(reduction=reduction)
+
+        batch_size = config()["dataloader"]["batch_size"]
+        total_labels = len(config()["dataloader"]["labels"])
+
+        actual = torch.randn((batch_size, total_labels))
+        predicted = torch.randn((batch_size, total_labels))
+
+        actual = torch.softmax(actual, dim=1)
+        predicted = torch.softmax(predicted, dim=1)
+
+        actual = torch.argmax(actual, dim=1).float()
+        predicted = torch.argmax(predicted, dim=1).float()
+
+        assert isinstance(
+            loss(actual, predicted), torch.Tensor
+        ), "Loss is not a torch.Tensor".capitalize()
+
 
 if __name__ == "__main__":
     unittest.main()
