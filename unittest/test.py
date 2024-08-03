@@ -11,12 +11,16 @@ from feedforward_network import FeedForwardNetwork
 from layer_normalization import LayerNormalization
 from multihead_attention import MultiHeadAttention
 from encoder_block import TransformerEncoderBlock
+from patch_embedding import PatchEmbedding
 from transformer import TransformerEncoder
 from scaled_dot_product import scaled_dot_product_attention
 
 
 class UnitTest(unittest.TestCase):
     def setUp(self):
+        self.image_size = 224
+        self.patch_size = 16
+        self.image_channels = 3
         self.total_texts = 400
         self.batch_size = 40
         self.nheads = 8
@@ -90,6 +94,12 @@ class UnitTest(unittest.TestCase):
             dropout=self.dropout,
             activation=self.activation,
             num_encoder_layers=self.num_layers,
+        )
+
+        self.patch_embedding = PatchEmbedding(
+            image_size=self.image_size,
+            image_channels=self.image_channels,
+            patch_size=self.patch_size,
         )
 
     def test_positional_encoding(self):
@@ -294,6 +304,19 @@ class UnitTest(unittest.TestCase):
         )
 
         self.assertIsInstance(self.transformerEncoder, TransformerEncoder)
+
+    def test_patch_embedding(self):
+        num_of_patches = (self.image_size // self.patch_size) ** 2
+        num_of_dimension = (self.patch_size**2) * self.image_channels
+
+        image = torch.randn(
+            self.batch_size, self.image_channels, self.image_size, self.image_size
+        )
+
+        self.assertEqual(
+            self.patch_embedding(image).size(),
+            (self.batch_size, num_of_patches + 1, num_of_dimension),
+        )
 
 
 if __name__ == "__main__":
