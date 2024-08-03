@@ -8,8 +8,10 @@ from torch.utils.data import DataLoader
 sys.path.append("./src/")
 
 from ViT import ViT
+from helper import helpers
 from dataloader import Loader
 from utils import config, load
+from loss import CategoricalLoss
 from patch_embedding import PatchEmbedding
 from transformer import TransformerEncoder
 from positional_encoding import PositionalEncoding
@@ -125,6 +127,26 @@ class UnitTest(unittest.TestCase):
             dim_feedforward=self.feedforward,
             dropout=self.dropout,
             activation=self.activation,
+        )
+
+        self.init = helpers(
+            image_channels=config()["dataloader"]["channels"],
+            image_size=config()["dataloader"]["image_size"],
+            labels=len(config()["dataloader"]["labels"]),
+            patch_size=config()["ViT"]["patch_size"],
+            nheads=config()["ViT"]["nheads"],
+            num_encoder_layers=config()["ViT"]["num_layers"],
+            dropout=config()["ViT"]["dropout"],
+            dim_feedforward=config()["ViT"]["dim_feedforward"],
+            epsilon=config()["ViT"]["eps"],
+            activation=config()["ViT"]["activation"],
+            bias=True,
+            lr=config()["trainer"]["lr"],
+            beta1=config()["trainer"]["beta1"],
+            beta2=config()["trainer"]["beta2"],
+            momentum=config()["trainer"]["momentum"],
+            adam=config()["trainer"]["adam"],
+            SGD=config()["trainer"]["SGD"],
         )
 
     def test_positional_encoding(self):
@@ -374,6 +396,23 @@ class UnitTest(unittest.TestCase):
         )
 
         self.assertIsInstance(self.model, ViT)
+
+    def test_helper_function(self):
+
+        assert (
+            self.init["train_dataloader"].__class__ == torch.utils.data.DataLoader
+        ), "Dataloader is not a torch.utils.data.DataLoader".capitalize()
+        assert (
+            self.init["valid_dataloader"].__class__ == torch.utils.data.DataLoader
+        ), "Dataloader is not a torch.utils.data.DataLoader".capitalize()
+
+        assert self.init["model"].__class__ == ViT, "Model is not a ViT".capitalize()
+        assert (
+            self.init["optimizer"].__class__ == torch.optim.Adam
+        ), "Optimizer is not a Adam".capitalize()
+        assert (
+            self.init["criterion"].__class__ == CategoricalLoss
+        ), "Loss is not a CategoricalLoss".capitalize()
 
 
 if __name__ == "__main__":
