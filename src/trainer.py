@@ -110,13 +110,25 @@ class Trainer:
         ), "Loss is not a CategoricalLoss".capitalize()
 
     def l1_loss(self, model: ViT):
-        pass
+        if isinstance(model, ViT):
+            return sum(torch.norm(params, 1) for params in model.parameters())
+        else:
+            raise ValueError("Model is not a ViT".capitalize())
 
     def l2_loss(self, model: ViT):
-        pass
+        if isinstance(model, ViT):
+            return sum(torch.norm(params, 2) for params in model.parameters())
+        else:
+            raise ValueError("Model is not a ViT".capitalize())
 
     def elasticnet_loss(self, model: ViT):
-        pass
+        if isinstance(model, ViT):
+            return sum(
+                torch.norm(params, 1) + torch.norm(params, 2)
+                for params in model.parameters()
+            )
+        else:
+            raise ValueError("Model is not a ViT".capitalize())
 
     def saved_checkpoints(self, **kwargs):
         pass
