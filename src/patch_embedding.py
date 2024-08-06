@@ -5,7 +5,7 @@ import torch.nn as nn
 
 sys.path.append("./src/")
 
-from utils import config
+from utils import config, device_init
 from positional_encoding import PositionalEncoding
 
 
@@ -21,6 +21,8 @@ class PatchEmbedding(nn.Module):
         self.image_size = image_size
         self.image_channels = image_channels
         self.patch_size = patch_size
+
+        self.device = device_init(device=config()["trainer"]["device"])
 
         self.num_patches = (self.image_size // patch_size) ** 2
         self.num_dimension = (self.patch_size**2) * self.image_channels
@@ -43,11 +45,11 @@ class PatchEmbedding(nn.Module):
             x = x.view(x.size(0), x.size(1), -1)
             x = x.permute(0, 2, 1)
 
-            class_token = torch.randn(x.size(0), 1, x.size(2))
+            class_token = torch.randn(x.size(0), 1, x.size(2)).to(self.device)
 
             x = torch.cat((class_token, x), dim=1)
 
-            x = torch.add(x, self.positional_encoding(x))
+            x = torch.add(x, self.positional_encoding(x).to(self.device))
 
             return x
 

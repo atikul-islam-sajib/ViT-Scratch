@@ -2,6 +2,8 @@ path:
   RAW_DATA_PATH: "./data/raw/"
   PROCESSED_DATA_PATH: "./data/processed/"
   FILES_PATH: "./artifacts/files/"
+  TRAIN_MODELS_PATH: "./artifacts/checkpoints/train_models/"
+  BEST_MODEL_PATH: "./artifacts/checkpoints/best_model/"
 
 dataloader:
   image_path: None
@@ -15,24 +17,24 @@ ViT:
   patch_size: 4                     # Size of each image patch
   dimension: 512                    # Embedding dimension for patches
   nheads: 8                         # Number of attention heads
-  dim_feedforward: 2048             # Dimension of the feedforward network
-  num_layers: 8                     # Number of transformer layers
+  dim_feedforward: 768              # Dimension of the feedforward network
+  num_layers: 3                     # Number of transformer layers
   dropout: 0.1                      # Dropout rate
   eps: 1e-05                        # Epsilon value for normalization layers
-  activation: "relu"                # Activation function
+  activation: "gelu"                # Activation function
 
 
 trainer:
   epochs: 2000                      # Number of training epochs
-  lr: 0.001                         # Learning rate
+  lr: 0.0005                        # Learning rate
   beta1: 0.5                        # Beta1 hyperparameter for Adam optimizer
   beta2: 0.999                      # Beta2 hyperparameter for Adam optimizer
   momentum: 0.90                    # Momentum for optimizers
   weight_decay: 0.001               # Weight decay for regularization
   step_size: 100                    # Step size for learning rate scheduler
   gamma: 0.85                       # Multiplicative factor for learning rate decay
-  threshold: 100                    # Threshold for model saving purposes
-  device: "cpu"                     # Device to use for training (e.g., MPS, CPU, GPU)
+  threshold: 10                    # Threshold for model saving purposes
+  device: "mps"                     # Device to use for training (e.g., MPS, CPU, GPU)
   adam: True                        # Use Adam optimizer
   SGD: False                        # Use SGD optimizer
   pixelLoss: False                  # Use pixel-wise loss
