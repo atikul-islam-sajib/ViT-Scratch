@@ -90,22 +90,32 @@ For detailed documentation on the implementation and usage, visit the -> [Transf
 ## Dataset Structure:
 
 ```
+Sure, here's the corrected and expanded directory structure including `folder2` and `folder3`:
+
+```
 dataset/  # Folder name must be 'dataset'
-├── X/  # Contains the inpaint data
-│   ├── 1.png
+├── folder1/
 │   ├── 2.png
+│   ├── 3.png
 │   ├── ...
-├── y/  # Contains the clean data
-│   ├── 1.png
+├── folder2/
 │   ├── 2.png
+│   ├── 3.png
 │   ├── ...
+├── folder3/
+│   ├── 2.png
+│   ├── 3.png
+│   ├── ...
+```
 ```
 
 ### Important Notes:
+
 - The folder name must be `dataset`.
-- `X` folder will contain the inpaint data.
-- `y` folder will contain the clean data.
-- Each image in `X` must be paired with a corresponding image in `y` (e.g., `X/1.png` pairs with `y/1.png`).
+- Each `folder*` (e.g., `folder1`, `folder2`, `folder3`, etc.) will contain the image data.
+- Inside each `folder*`, the images are named sequentially (e.g., `2.png`, `3.png`, `4.png`, `5.png`, etc.).
+- The structure is designed to group related images within each folder, which may represent different categories, classes, or datasets for a specific purpose.
+- Ensure that all image files are correctly named and placed in their respective folders to maintain the integrity and organization of the dataset.
 
 ### Command Line Interface
 
