@@ -90,9 +90,6 @@ For detailed documentation on the implementation and usage, visit the -> [Transf
 ## Dataset Structure:
 
 ```
-Sure, here's the corrected and expanded directory structure including `folder2` and `folder3`:
-
-```
 dataset/  # Folder name must be 'dataset'
 ├── folder1/
 │   ├── 2.png
