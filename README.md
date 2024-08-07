@@ -300,4 +300,4 @@ mlflow ui
 Contributions to improve this implementation of ViT are welcome. Please follow the standard fork-branch-pull request workflow.
 
 ## License
-Specify the license under which the project is made available (e.g., MIT License).
+The project is made available (e.g., MIT License).
