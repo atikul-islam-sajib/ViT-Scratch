@@ -17,8 +17,8 @@ dataloader:
 
 MLFLow:
   MLFLOW_TRACKING_URI: "https://dagshub.com/atikul-islam-sajib/ViT-Scratch.mlflow"
-  MLFLOW_USERNAME: "atikul-islam-sajib"
-  MLFLOW_PASSWORD: "74d9f47e6bc7f8a7a170d258186fcdf18a099a99"
+  MLFLOW_USERNAME: "********"
+  MLFLOW_PASSWORD: "********"
 
 ViT:
   patch_size: 8                     # Size of each image patch
