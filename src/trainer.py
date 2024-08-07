@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from torch.optim.lr_scheduler import StepLR
 
-sys.path.append(".src/")
+sys.path.append("./src/")
 
 from ViT import ViT
 from helper import helpers
