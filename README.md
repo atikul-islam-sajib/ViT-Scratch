@@ -107,7 +107,6 @@ dataset/  # Folder name must be 'dataset'
 │   ├── 3.png
 │   ├── ...
 ```
-```
 
 ### Important Notes:
 
