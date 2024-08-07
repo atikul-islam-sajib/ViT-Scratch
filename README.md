@@ -83,9 +83,9 @@ The repository provides scripts and notebooks to help you understand and experim
     └── test.py
 ```
 
-<!-- ### User Guide Notebook (Tutorial for inferencing)
+### User Guide Notebook (Tutorial for inferencing)
 
-For detailed documentation on the implementation and usage, visit the -> [Transformer Tutorial Notebook](https://github.com/atikul-islam-sajib/TransformerScratch/blob/main/notebooks/Model_Inference.ipynb) -->
+For detailed documentation on the implementation and usage, visit the -> [ViT Tutorial Notebook](https://github.com/atikul-islam-sajib/ViT-Scratch/blob/main/notebooks/Tutorial_for_ViT.ipynb)
 
 ## Dataset Structure:
 
