@@ -276,8 +276,8 @@ trainer:
 To start training and logging the experiments to DagsHub, run the following command:
 
 ```bash
-python src/cli.py --mode train 
-python src/cli.py --mode test 
+python src/cli.py -- train 
+python src/cli.py -- test 
 
 ```
 
