@@ -40,7 +40,7 @@ trainer:
   step_size: 100                    # Step size for learning rate scheduler
   gamma: 0.85                       # Multiplicative factor for learning rate decay
   threshold: 2                      # Threshold for model saving purposes
-  device: "mps"                     # Device to use for training (e.g., MPS, CPU, GPU)
+  device: "cuda"                    # Device to use for training (e.g., MPS, CPU, GPU)
   adam: True                        # Use Adam optimizer
   SGD: False                        # Use SGD optimizer
   pixelLoss: False                  # Use pixel-wise loss

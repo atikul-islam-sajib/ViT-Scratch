@@ -170,20 +170,32 @@ optional arguments:
 
 ```
 
-### CLI Command for CPU
+### CLI Command for CPU - Training
 
 ```bash
-python cli.py --image_path ./data --channels 3 --image_size 224 --batch_size 64 --split_size 0.8 --labels 10 --patch_size 16 --nheads 8 --num_encoder_layers 6 --dropout 0.1 --dim_feedforward 2048 --epsilon 1e-8 --activation relu --bias True --epochs 50 --lr 0.001 --beta1 0.9 --beta2 0.999 --momentum 0.9 --step_size 10 --gamma 0.1 --threshold 0.5 --device cpu --adam True --SGD False --l1_regularization 0.0 --l2_regularization 0.0 --elasticnet_regularization 0.0 --verbose True --mlflow False --train True --test False
+python cli.py --image_path ./data.zip --channels 3 --image_size 224 --batch_size 64 --split_size 0.8 --labels 10 --patch_size 16 --nheads 8 --num_encoder_layers 6 --dropout 0.1 --dim_feedforward 2048 --epsilon 1e-8 --activation relu --bias True --epochs 50 --lr 0.001 --beta1 0.9 --beta2 0.999 --momentum 0.9 --step_size 10 --gamma 0.1 --threshold 0.5 --device cpu --adam True --SGD False --l1_regularization 0.0 --l2_regularization 0.0 --elasticnet_regularization 0.0 --verbose True --mlflow False --train True --test False
 ```
 
-### CLI Command for CUDA
+### CLI Command for CUDA - Training
 
 ```bash
-python cli.py --image_path ./data --channels 3 --image_size 224 --batch_size 64 --split_size 0.8 --labels 10 --patch_size 16 --nheads 8 --num_encoder_layers 6 --dropout 0.1 --dim_feedforward 2048 --epsilon 1e-8 --activation relu --bias True --epochs 50 --lr 0.001 --beta1 0.9 --beta2 0.999 --momentum 0.9 --step_size 10 --gamma 0.1 --threshold 0.5 --device cuda --adam True --SGD False --l1_regularization 0.0 --l2_regularization 0.0 --elasticnet_regularization 0.0 --verbose True --mlflow False --train True --test False
+python cli.py --image_path ./data.zip --channels 3 --image_size 224 --batch_size 64 --split_size 0.8 --labels 10 --patch_size 16 --nheads 8 --num_encoder_layers 6 --dropout 0.1 --dim_feedforward 2048 --epsilon 1e-8 --activation relu --bias True --epochs 50 --lr 0.001 --beta1 0.9 --beta2 0.999 --momentum 0.9 --step_size 10 --gamma 0.1 --threshold 0.5 --device cuda --adam True --SGD False --l1_regularization 0.0 --l2_regularization 0.0 --elasticnet_regularization 0.0 --verbose True --mlflow False --train True --test False
+```
+
+### CLI Command for CPU - Testing
+
+```bash
+python cli.py --device "cpu" --test
+```
+
+### CLI Command for CUDA - Testing
+
+```bash
+python cli.py --device "cuda" --test
 ```
 
 **Configure the Project**:
-```
+```yaml
 path:
   RAW_DATA_PATH: "./data/raw/"
   PROCESSED_DATA_PATH: "./data/processed/"
