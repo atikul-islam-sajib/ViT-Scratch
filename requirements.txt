@@ -3,6 +3,7 @@ dvc
 graphviz
 matplotlib
 numpy
+mlflow
 PyYAML
 torch
 torchaudio
