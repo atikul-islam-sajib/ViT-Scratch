@@ -1,0 +1,43 @@
+stages:
+  training:
+    cmd: python src/cli.py --train
+    deps:
+      - src/cli.py
+      - src/dataloader.py
+      - src/encoder_block.py
+      - src/feedforward_network.py
+      - src/helper.py
+      - src/layer_normalization.py
+      - src/loss.py
+      - src/multihead_attention.py
+      - src/patch_embedding.py
+      - src/positional_encoding.py
+      - src/scaled_dot_product.py
+      - src/trainer.py
+      - src/transformer.py
+      - src/utils.py
+      - src/ViT.py
+      - ./data/
+      - ./artifacts/
+
+  testing:
+    cmd: python src/cli.py --test
+    deps:
+      - src/cli.py
+      - src/dataloader.py
+      - src/encoder_block.py
+      - src/feedforward_network.py
+      - src/helper.py
+      - src/layer_normalization.py
+      - src/loss.py
+      - src/multihead_attention.py
+      - src/patch_embedding.py
+      - src/positional_encoding.py
+      - src/scaled_dot_product.py
+      - src/trainer.py
+      - src/transformer.py
+      - src/utils.py
+      - src/ViT.py
+      - src/tester.py
+      - ./data/
+      - ./artifacts/

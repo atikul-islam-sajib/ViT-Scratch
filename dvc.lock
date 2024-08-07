@@ -1,0 +1,152 @@
+schema: '2.0'
+stages:
+  training:
+    cmd: python src/cli.py --train
+    deps:
+    - path: ./artifacts/
+      hash: md5
+      md5: 5d086a0b8a6528dccb47be15a23de6f8.dir
+      size: 1168344129
+      nfiles: 65
+    - path: ./data/
+      hash: md5
+      md5: 1c3ce08228f14567ea4bc4574f1a10c6.dir
+      size: 1257204404
+      nfiles: 5716
+    - path: src/ViT.py
+      hash: md5
+      md5: 925f254fe8dac9486a821724a9edaa4d
+      size: 5306
+    - path: src/cli.py
+      hash: md5
+      md5: 4fb3b4a70e0d5a4aec1f0bf248eee739
+      size: 7750
+    - path: src/dataloader.py
+      hash: md5
+      md5: c01d44c940df7a943f6c506c5aae6af1
+      size: 9561
+    - path: src/encoder_block.py
+      hash: md5
+      md5: d35da4c3750eff7d4468fd403db5ec1e
+      size: 3851
+    - path: src/feedforward_network.py
+      hash: md5
+      md5: 0b866f33a2a5a851dea5861099de8d18
+      size: 2929
+    - path: src/helper.py
+      hash: md5
+      md5: 5fa34f8c122e8d1a69c8e8a6c17df30d
+      size: 3911
+    - path: src/layer_normalization.py
+      hash: md5
+      md5: 621cd82a92da6a4e89b051409d03755a
+      size: 1945
+    - path: src/loss.py
+      hash: md5
+      md5: 43827280fa3b06a70566643f749ac956
+      size: 1606
+    - path: src/multihead_attention.py
+      hash: md5
+      md5: 808c04faf48d0c24c4a32a1a475ac2cf
+      size: 3867
+    - path: src/patch_embedding.py
+      hash: md5
+      md5: 0406acb011ff3322d95b3eacac5f3324
+      size: 2880
+    - path: src/positional_encoding.py
+      hash: md5
+      md5: 0109cf745ba0fc21bc61c4ace99f8a14
+      size: 2360
+    - path: src/scaled_dot_product.py
+      hash: md5
+      md5: f047eed6633d21cfd7c1ca70af386549
+      size: 2151
+    - path: src/trainer.py
+      hash: md5
+      md5: e2e89e1efff216e76a8438193421ca22
+      size: 19632
+    - path: src/transformer.py
+      hash: md5
+      md5: 6a82e53d0de05db0ca5f607292ad8881
+      size: 3667
+    - path: src/utils.py
+      hash: md5
+      md5: a403d7ec41bf400dab8225da1da2ea8a
+      size: 856
+  testing:
+    cmd: python src/cli.py --test
+    deps:
+    - path: ./artifacts/
+      hash: md5
+      md5: b864d38514600a553a8ff6a5ad0d5e03.dir
+      size: 1168324648
+      nfiles: 65
+    - path: ./data/
+      hash: md5
+      md5: 1c3ce08228f14567ea4bc4574f1a10c6.dir
+      size: 1257204404
+      nfiles: 5716
+    - path: src/ViT.py
+      hash: md5
+      md5: 925f254fe8dac9486a821724a9edaa4d
+      size: 5306
+    - path: src/cli.py
+      hash: md5
+      md5: 4fb3b4a70e0d5a4aec1f0bf248eee739
+      size: 7750
+    - path: src/dataloader.py
+      hash: md5
+      md5: c01d44c940df7a943f6c506c5aae6af1
+      size: 9561
+    - path: src/encoder_block.py
+      hash: md5
+      md5: d35da4c3750eff7d4468fd403db5ec1e
+      size: 3851
+    - path: src/feedforward_network.py
+      hash: md5
+      md5: 0b866f33a2a5a851dea5861099de8d18
+      size: 2929
+    - path: src/helper.py
+      hash: md5
+      md5: 5fa34f8c122e8d1a69c8e8a6c17df30d
+      size: 3911
+    - path: src/layer_normalization.py
+      hash: md5
+      md5: 621cd82a92da6a4e89b051409d03755a
+      size: 1945
+    - path: src/loss.py
+      hash: md5
+      md5: 43827280fa3b06a70566643f749ac956
+      size: 1606
+    - path: src/multihead_attention.py
+      hash: md5
+      md5: 808c04faf48d0c24c4a32a1a475ac2cf
+      size: 3867
+    - path: src/patch_embedding.py
+      hash: md5
+      md5: 0406acb011ff3322d95b3eacac5f3324
+      size: 2880
+    - path: src/positional_encoding.py
+      hash: md5
+      md5: 0109cf745ba0fc21bc61c4ace99f8a14
+      size: 2360
+    - path: src/scaled_dot_product.py
+      hash: md5
+      md5: f047eed6633d21cfd7c1ca70af386549
+      size: 2151
+    - path: src/tester.py
+      hash: md5
+      md5: 2fe325fd6f3f2ee97adbc87c95411d9c
+      size: 6454
+    - path: src/trainer.py
+      hash: md5
+      md5: e2e89e1efff216e76a8438193421ca22
+      size: 19632
+    - path: src/transformer.py
+      hash: md5
+      md5: 6a82e53d0de05db0ca5f607292ad8881
+      size: 3667
+    - path: src/utils.py
+      hash: md5
+      md5: a403d7ec41bf400dab8225da1da2ea8a
+      size: 856

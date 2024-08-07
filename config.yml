@@ -4,36 +4,42 @@ path:
   FILES_PATH: "./artifacts/files/"
   TRAIN_MODELS_PATH: "./artifacts/checkpoints/train_models/"
   BEST_MODEL_PATH: "./artifacts/checkpoints/best_model/"
+  OUTPUTS_PATH: "./artifacts/outputs/test_image/"
+  METRICS_PATH: "./artifacts/metrics/"
 
 dataloader:
   image_path: None
   channels: 3
   image_size: 128
-  batch_size: 64
-  split_size: 0.25
+  batch_size: 32
+  split_size: 0.30
   labels: ["glioma", "meningioma", "notumor", "pituitary"]
 
+MLFLow:
+  MLFLOW_TRACKING_URI: "https://dagshub.com/atikul-islam-sajib/ViT-Scratch.mlflow"
+  MLFLOW_USERNAME: "atikul-islam-sajib"
+  MLFLOW_PASSWORD: "74d9f47e6bc7f8a7a170d258186fcdf18a099a99"
+
 ViT:
-  patch_size: 4                     # Size of each image patch
-  dimension: 512                    # Embedding dimension for patches
+  patch_size: 8                     # Size of each image patch
   nheads: 8                         # Number of attention heads
-  dim_feedforward: 768              # Dimension of the feedforward network
-  num_layers: 3                     # Number of transformer layers
+  dim_feedforward: 2048             # Dimension of the feedforward network
+  num_layers: 6                     # Number of transformer layers
   dropout: 0.1                      # Dropout rate
   eps: 1e-05                        # Epsilon value for normalization layers
-  activation: "gelu"                # Activation function
+  activation: "relu"                # Activation function
 
 
 trainer:
-  epochs: 2000                      # Number of training epochs
-  lr: 0.0005                        # Learning rate
+  epochs: 100                       # Number of training epochs
+  lr: 2e-5                          # Learning rate
   beta1: 0.5                        # Beta1 hyperparameter for Adam optimizer
   beta2: 0.999                      # Beta2 hyperparameter for Adam optimizer
   momentum: 0.90                    # Momentum for optimizers
   weight_decay: 0.001               # Weight decay for regularization
   step_size: 100                    # Step size for learning rate scheduler
   gamma: 0.85                       # Multiplicative factor for learning rate decay
-  threshold: 10                    # Threshold for model saving purposes
+  threshold: 2                      # Threshold for model saving purposes
   device: "mps"                     # Device to use for training (e.g., MPS, CPU, GPU)
   adam: True                        # Use Adam optimizer
   SGD: False                        # Use SGD optimizer
@@ -43,5 +49,5 @@ trainer:
   elasticnet_regularization: False  # Use Elastic Net regularization
   lr_scheduler: True                # Enable learning rate scheduler
   verbose: True                     # Enable verbose logging
-  mlflow: False                     # Enable MLflow tracking
+  mlflow: True                      # Enable MLflow tracking
   

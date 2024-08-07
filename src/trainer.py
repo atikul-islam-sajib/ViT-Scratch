@@ -1,18 +1,22 @@
 import os
 import sys
 import torch
+import mlflow
+import dagshub
 import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import torch.nn as nn
+import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
+from torch.optim.lr_scheduler import StepLR
 
 sys.path.append(".src/")
 
 from ViT import ViT
 from helper import helpers
-from utils import config, device_init
+from utils import load, dump, config, device_init
 from loss import CategoricalLoss
 
 
@@ -44,7 +48,9 @@ class Trainer:
         l1_regularization: bool = False,
         l2_regularization: bool = False,
         elasticnet_regularization: bool = False,
+        mlflow: bool = False,
         verbose: bool = True,
+        lr_scheduler: bool = False,
     ):
 
         self.image_channels = image_channels
@@ -72,7 +78,9 @@ class Trainer:
         self.l1_regularization = l1_regularization
         self.l2_regularization = l2_regularization
         self.elasticnet_regularization = elasticnet_regularization
+        self.mlflow = mlflow
         self.verbose = verbose
+        self.lr_scheduler = lr_scheduler
 
         self.init = helpers(
             image_channels=self.image_channels,
@@ -119,12 +127,31 @@ class Trainer:
             self.init["criterion"].__class__ == CategoricalLoss
         ), "Loss is not a CategoricalLoss".capitalize()
 
+        if self.mlflow:
+            dagshub.init(
+                repo_owner=config()["MLFLow"]["MLFLOW_USERNAME"],
+                repo_name="ViT-Scratch",
+                mlflow=True,
+            )
+
+        if self.lr_scheduler:
+            self.scheduler = StepLR(
+                optimizer=self.optimizer, step_size=self.step_size, gamma=self.gamma
+            )
+
         self.loss = float("inf")
 
         self.total_train_loss = []
         self.total_valid_loss = []
         self.total_train_accuracy = []
         self.total_valid_accuracy = []
+
+        self.model_history = {
+            "train_loss": [],
+            "valid_loss": [],
+            "train_accuracy": [],
+            "valid_accuracy": [],
+        }
 
     def l1_loss(self, model: ViT):
         if isinstance(model, ViT):
@@ -201,95 +228,181 @@ class Trainer:
             print("Epochs: [{}/{}] is completed.".format(epoch + 1, self.epochs))
 
     def train(self):
-        for epoch in tqdm(range(self.epochs)):
-            self.train_loss = list()
-            self.valid_loss = list()
+        with mlflow.start_run(
+            description="An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale".title()
+        ) as run:
+            for epoch in tqdm(range(self.epochs)):
+                self.train_loss = list()
+                self.valid_loss = list()
 
-            self.train_actual = list()
-            self.train_target = list()
-            self.valid_actual = list()
-            self.valid_target = list()
+                self.train_actual = list()
+                self.train_target = list()
+                self.valid_actual = list()
+                self.valid_target = list()
 
-            for _, (X, y) in enumerate(self.train_dataloader):
-                X = X.to(self.device)
-                y = y.to(self.device)
+                for _, (X, y) in enumerate(self.train_dataloader):
+                    X = X.to(self.device)
+                    y = y.to(self.device)
 
-                self.optimizer.zero_grad()
+                    self.optimizer.zero_grad()
 
-                predicted = self.model(X)
+                    predicted = self.model(X)
 
-                self.train_actual.extend(
-                    torch.argmax(predicted, dim=1).cpu().detach().numpy()
+                    self.train_actual.extend(
+                        torch.argmax(predicted, dim=1).cpu().detach().numpy()
+                    )
+                    self.train_target.extend(y.cpu().detach().numpy())
+
+                    loss = self.criterion(predicted, y)
+
+                    self.train_loss.append(loss.item())
+
+                    if self.l1_regularization:
+                        loss = 0.001 * self.l1_loss(model=self.model)
+                    elif self.l2_regularization:
+                        loss = 0.001 * self.l2_loss(model=self.model)
+                    elif self.elasticnet_regularization:
+                        loss = 0.001 * self.elasticnet_loss(model=self.model)
+
+                    loss.backward()
+                    self.optimizer.step()
+
+                for _, (X, y) in enumerate(self.valid_dataloader):
+                    X = X.to(self.device)
+                    y = y.to(self.device)
+
+                    predicted = self.model(X)
+                    predicted = torch.argmax(input=predicted, dim=1)
+                    predicted = predicted.float()
+
+                    loss = self.criterion(predicted, y.float())
+
+                    self.valid_actual.extend(predicted.cpu().detach().numpy())
+                    self.valid_target.extend(y.cpu().detach().numpy())
+
+                    self.valid_loss.append(loss.item())
+
+                if self.lr_scheduler:
+                    self.scheduler.step()
+
+                self.display_progress(
+                    epoch=epoch,
+                    train_loss=np.mean(self.train_loss),
+                    valid_loss=np.mean(self.valid_loss),
+                    train_actual=self.train_actual,
+                    train_target=self.train_target,
+                    valid_actual=self.valid_actual,
+                    valid_target=self.valid_target,
                 )
-                self.train_target.extend(y.cpu().detach().numpy())
 
-                loss = self.criterion(predicted, y)
+                if epoch % self.threshold == 0:
+                    self.saved_checkpoints(
+                        epoch=epoch, train_loss=np.mean(self.train_loss)
+                    )
 
-                self.train_loss.append(loss.item())
+                self.total_train_loss.append(np.mean(self.train_loss))
+                self.total_valid_loss.append(np.mean(self.valid_loss))
 
-                if self.l1_regularization:
-                    loss = 0.001 * self.l1_loss(model=self.model)
-                elif self.l2_regularization:
-                    loss = 0.001 * self.l2_loss(model=self.model)
-                elif self.elasticnet_regularization:
-                    loss = 0.001 * self.elasticnet_loss(model=self.model)
+                self.total_train_accuracy.append(
+                    accuracy_score(self.train_target, self.train_actual)
+                )
+                self.total_valid_accuracy.append(
+                    accuracy_score(self.valid_target, self.valid_actual)
+                )
 
-                loss.backward()
-                self.optimizer.step()
+                mlflow.log_params(
+                    {
+                        "image_channels": self.image_channels,
+                        "image_size": self.image_size,
+                        "labels": self.labels,
+                        "patch_size": self.patch_size,
+                        "nheads": self.nheads,
+                        "num_encoder_layers": self.num_encoder_layers,
+                        "dropout": self.dropout,
+                        "dim_feedforward": self.dim_feedforward,
+                        "epsilon": self.epsilon,
+                        "activation": self.activation,
+                        "bias": self.bias,
+                        "epochs": self.epochs,
+                        "lr": self.lr,
+                        "beta1": self.beta1,
+                        "beta2": self.beta2,
+                        "momentum": self.momentum,
+                        "step_size": self.step_size,
+                        "gamma": self.gamma,
+                        "threshold": self.threshold,
+                        "device": self.device,
+                        "adam": self.adam,
+                        "SGD": self.SGD,
+                        "l1_regularization": self.l1_regularization,
+                        "l2_regularization": self.l2_regularization,
+                        "elasticnet_regularization": self.elasticnet_regularization,
+                        "mlflow": self.mlflow,
+                        "verbose": self.verbose,
+                    }
+                )
 
-            for _, (X, y) in enumerate(self.valid_dataloader):
-                X = X.to(self.device)
-                y = y.to(self.device)
+                mlflow.log_metric(
+                    "train_loss", np.mean(self.train_loss), step=epoch + 1
+                )
+                mlflow.log_metric(
+                    "valid_loss", np.mean(self.valid_loss), step=epoch + 1
+                )
 
-                predicted = self.model(X)
-                predicted = torch.argmax(input=predicted, dim=1)
-                predicted = predicted.float()
+            try:
+                pd.DataFrame(
+                    {
+                        "train_loss": self.total_train_loss,
+                        "valid_loss": self.total_valid_loss,
+                        "train_accuracy": self.total_train_accuracy,
+                        "valid_accuracy": self.total_valid_accuracy,
+                    }
+                ).to_csv(os.path.join(config()["path"]["FILES_PATH"], "history.csv"))
 
-                loss = self.criterion(predicted, y.float())
+                self.model_history["train_loss"].append(self.total_train_loss)
+                self.model_history["valid_loss"].append(self.total_valid_loss)
+                self.model_history["train_accuracy"].append(self.total_train_accuracy)
+                self.model_history["valid_accuracy"].append(self.total_valid_accuracy)
 
-                self.valid_actual.extend(predicted.cpu().detach().numpy())
-                self.valid_target.extend(y.cpu().detach().numpy())
+                dump(
+                    value=self.model_history,
+                    filename=os.path.join(
+                        config()["path"]["METRICS_PATH"], "history.pkl"
+                    ),
+                )
+            except Exception as e:
+                print("An error occurred: ", e)
 
-                self.valid_loss.append(loss.item())
-
-            self.display_progress(
-                epoch=epoch,
-                train_loss=np.mean(self.train_loss),
-                valid_loss=np.mean(self.valid_loss),
-                train_actual=self.train_actual,
-                train_target=self.train_target,
-                valid_actual=self.valid_actual,
-                valid_target=self.valid_target,
-            )
-
-            if epoch % self.threshold == 0:
-                self.saved_checkpoints(epoch=epoch, train_loss=np.mean(self.train_loss))
-
-            self.total_train_loss.append(np.mean(self.train_loss))
-            self.total_valid_loss.append(np.mean(self.valid_loss))
-
-            self.total_train_accuracy.append(
-                accuracy_score(self.train_target, self.train_actual)
-            )
-            self.total_valid_accuracy.append(
-                accuracy_score(self.valid_target, self.valid_actual)
-            )
-
-        try:
-            pd.DataFrame(
-                {
-                    "train_loss": self.total_train_loss,
-                    "valid_loss": self.total_valid_loss,
-                    "train_accuracy": self.total_train_accuracy,
-                    "valid_accuracy": self.total_valid_accuracy,
-                }
-            ).to_csv(os.path.join(config()["path"]["FILES_PATH"], "history.pkl"))
-        except Exception as e:
-            print("An error occurred: ", e)
+            else:
+                mlflow.pytorch.log_model(self.model, "model")
 
     @staticmethod
     def display_history():
-        pass
+        history = load(
+            filename=os.path.join(config()["path"]["METRICS_PATH"], "history.pkl")
+        )
+
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+        axes[0].plot(history["train_loss"], label="Train Loss")
+        axes[0].plot(history["valid_loss"], label="Valid Loss")
+        axes[0].set_title("Loss")
+        axes[0].set_xlabel("Epochs")
+        axes[0].set_ylabel("Loss")
+        axes[0].legend()
+
+        axes[1].plot(history["train_accuracy"], label="Train Accuracy")
+        axes[1].plot(history["valid_accuracy"], label="Valid Accuracy")
+        axes[1].set_title("Accuracy")
+        axes[1].set_xlabel("Epochs")
+        axes[1].set_ylabel("Accuracy")
+        axes[1].legend()
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(config()["path"]["METRICS_PATH"], "history.png"))
+        plt.show()
+
+        print("The history has been saved to: ", config()["path"]["METRICS_PATH"])
 
 
 if __name__ == "__main__":
@@ -450,6 +563,13 @@ if __name__ == "__main__":
         default=config()["trainer"]["verbose"],
         help="Verbose".capitalize(),
     )
+    parser.add_argument(
+        "--mlflow",
+        type=bool,
+        default=config()["trainer"]["mlflow"],
+        help="MLflow".capitalize(),
+    )
+
     args = parser.parse_args()
 
     trainer = Trainer(
@@ -460,6 +580,7 @@ if __name__ == "__main__":
         nheads=args.nheads,
         num_encoder_layers=args.num_encoder_layers,
         dropout=args.dropout,
+        device=args.device,
         dim_feedforward=args.dim_feedforward,
         epsilon=args.epsilon,
         activation=args.activation,
@@ -476,4 +597,9 @@ if __name__ == "__main__":
         l2_regularization=args.l2_regularization,
         elasticnet_regularization=args.elasticnet_regularization,
         verbose=args.verbose,
+        mlflow=args.mlflow,
     )
+
+    trainer.train()
+
+    Trainer.display_history()
